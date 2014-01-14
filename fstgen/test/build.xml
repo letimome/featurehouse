@@ -7,9 +7,9 @@
 
      ckaestne
      ====================================================================== -->
-<project name="test_fstgen" default="testContract">
+<project name="test_fstgen" default="testR"> 
 	<echo>${java.class.path}</echo>
-	<eclipse.convertPath resourcePath="fstgen" property="fstgen_dir" />
+	<eclipse.convertPath resourcePath="fstgen" property="fstgen_dir"/>
 	<eclipse.convertPath resourcePath="CIDE2_ast/bin" property="ast_dir" />
 	<eclipse.convertPath resourcePath="CIDE_generateAST/bin" property="astgen_dir" />
 
@@ -35,8 +35,19 @@
 		</classpath>
 	</taskdef>
 
-	<target name="all" depends="testFJ,testJava,testJavaMerge,testJak,testCSharp,testC,testHaskell,testJavaCC,testAlloy"></target>
+	<target name="all" depends="testFJ,testJava,testJavaMerge,testJak,testCSharp,testC,testHaskell,testJavaCC,testAlloy,testR"></target>
 
+	
+	<target name="testR">
+				<antcall target="testGrammar">
+					<param name="language" value="r" />
+					<param name="parserClass" value="RParser" />
+					<param name="mainProduction" value="file_input" />
+					<param name="directory" value="${fstgen_dir}/test" />
+					<param name="testFile" value="Test.r" />
+				</antcall>
+		</target>
+	
 	<target name="testFJ">
 		<antcall target="testGrammar">
 			<param name="language" value="fj" />
@@ -216,6 +227,9 @@
 			<param name="testFile" value="Test.sdf" />
 		</antcall>
 	</target>
+	
+	
+	
 
 	<target name="testGrammar" description="--> description">
 		<mkdir dir="${directory}/tmp/generated_${language}" />

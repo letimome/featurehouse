@@ -1,0 +1,730 @@
+
+options {
+	STATIC = false;                          // multiple parsers
+	COMMON_TOKEN_ACTION = false;              // 
+	USER_CHAR_STREAM = true;
+	UNICODE_INPUT = true;
+}
+
+
+PARSER_BEGIN(RParser)
+
+package tmp.generated_r;
+import cide.gparser.*;
+import de.ovgu.cide.fstgen.ast.*;
+
+public class RParser extends AbstractFSTParser {
+	public RParser() {}
+}
+
+PARSER_END(RParser)
+
+
+
+SPECIAL_TOKEN :
+{
+  " "
+| "\t"
+| "\n"
+| "\r"
+| "\f"
+}
+
+
+<DEFAULT> SKIP: //COMENTS 
+{
+	<TRAILING_COMMENT: "#" (~["\n","\r"])*>
+}
+
+<INDENTING, INDENTATION_UNCHANGED> SKIP: // COMMENTS  
+{
+	<SINGLE_LINE_COMMENT: "#" (~["\n","\r"])* ("\r\n" | "\n" | "\r")> 
+}
+
+TOKEN : // SEPARATORS  
+{
+	< LPAREN: "(" > 
+	|  < RPAREN: ")" > 
+	|  < LBRACE: "{" > 
+	|  < RBRACE: "}" > 
+	|  < LBRACKET: "[" > 
+	|  < RBRACKET: "]" > 
+	|  < SEMICOLON: ";" >
+	|  < COMMA: "," >
+	|  < DOT: "." >
+	|  < COLON: ":" >
+	|  < NEWLINE: ("\n" | "\r")> 
+
+}
+
+
+TOKEN : /* OPERATORS */ {
+	< PLUS: "+" >
+	|  < MINUS: "-" >
+	|  < MULTIPLY: "*" >
+	|  < DIVIDE: "/" >
+	|  < FLOORDIVIDE: "//" >
+	|  < POWER: "**" >
+	|  < LSHIFT: "<<" >
+	|  < RSHIFT: ">>" >
+	|  < MODULO: "%" >
+	|  < NOT: "~" >
+	|  < XOR: "^" >
+	|  < OR: "|" >
+	|  < AND: "&" >
+	|  < EQUAL: "=" >
+	|  < GREATER: ">" >
+	|  < LESS: "<" >
+	|  < EQEQUAL: "==" >
+	|  < EQLESS: "<=" >
+	|  < EQGREATER: ">=" >
+	|  < LESSGREATER: "<>" >
+	|  < NOTEQUAL: "!=" >
+	|  < PLUSEQ: "+=" >
+	|  < MINUSEQ: "-=" >
+	|  < MULTIPLYEQ: "*=" >
+	|  < DIVIDEEQ: "/=" >
+	|  < FLOORDIVIDEEQ: "//=" >
+	|  < MODULOEQ: "%=" >
+	|  < ANDEQ: "&=" >
+	|  < OREQ: "|=" >
+	|  < XOREQ: "^=" >
+	|  < LSHIFTEQ: "<<=" >
+	|  < RSHIFTEQ: ">>=" >
+	|  < POWEREQ: "**=" >
+	|  < DOLAR: "$">
+	|  < LESSMINUS: "<-">
+	|  < AT: "@">
+}
+
+TOKEN : /* KEYWORDS */ {
+	< OR_BOOL: "or" >
+	|  < AND_BOOL: "and" >
+	|  < NOT_BOOL: "not" >
+	|  < IS: "is" >
+	|  < IN: "in" >
+	|  < LAMBDA: "lambda" >
+	|  < IF: "if" >
+	|  < ELSE: "else" >
+	|  < ELIF: "elif" >
+	|  < WHILE: "while" >
+	|  < FOR: "for" >
+	|  < TRY: "try" >
+	|  < EXCEPT: "except" >
+	|  < DEF: "def" >
+	|  < CLASS: "class" >
+	|  < FINALLY: "finally" >
+	|  < PRINT: "print" >
+	|  < PASS: "pass" >
+	|  < BREAK: "break" >
+	|  < CONTINUE: "continue" >
+	|  < RETURN: "return" >
+	|  < YIELD: "yield" >
+	|  < LIBRARY: "library" >
+	|  < FROM: "from" >
+	|  < DEL: "del" >
+	|  < RAISE: "raise" >
+	|  < GLOBAL: "global" >
+	|  < EXEC: "exec" >
+	|  < ASSERT: "assert" >
+	|  < AS: "as" >
+	|  < WITH: "with" >
+	|  <FUNCTION: "function" >
+}
+
+
+TOKEN : /* R identifiers */ {
+	 < NAME: "." (<LETTER>|"_"|".") (<LETTER>|<DIGIT>|"_"|".")*
+    |   <LETTER> (<LETTER>|<DIGIT>|"_"|".")*>
+    |  < #LETTER: ["$","_","a"-"z","A"-"Z"] > //INCLUIDO EL DOLAR!!!!
+}
+
+TOKEN : /* Numeric literals */ {
+	< DECNUMBER: ["1"-"9"] (["0"-"9"])* (["l", "L"])? | "0" >
+	|  < HEXNUMBER: "0" ["x","X"] (["0"-"9","a"-"f","A"-"F"])+ (["l","L"])? >
+	|  < OCTNUMBER: "0" (["0"-"7"])* (["l","L"])? >
+	|  < FLOAT: (["0"-"9"])+ "." (["0"-"9"])* (<EXPONENT>)?
+		| "." (["0"-"9"])+ (<EXPONENT>)?
+		| (["0"-"9"])+ <EXPONENT> >
+	|  < COMPLEX: (<DECNUMBER> | <FLOAT> | "0" <DECNUMBER> ) ["j", "J"] >
+	|  < #EXPONENT: ["e","E"] (["+","-"])? (["0"-"9"])+ >
+	|  < #DIGIT: ["0" - "9"] >
+}
+
+
+
+
+MORE : /* Strings */ {
+	< (["u", "U"]) (["r", "R"])? "'" > :  IN_USTRING11
+	|  < (["u", "U"]) (["r", "R"])? "\"" > :  IN_USTRING21
+	|  < (["u", "U"]) (["r", "R"])? "'''" > :  IN_USTRING13
+	|  < (["u", "U"]) (["r", "R"])? "\"\"\"" > :  IN_USTRING23
+	|  < (["r", "R"])? "'" > :  IN_STRING11
+	|  < (["r", "R"])? "\"" > :  IN_STRING21
+	|  < (["r", "R"])? "'''" > :  IN_STRING13
+	|  < (["r", "R"])? "\"\"\"" > :  IN_STRING23
+}
+
+<IN_STRING11> TOKEN : { <SINGLE_STRING: "'"> {
+    matchedToken.image = image.toString(); } : DEFAULT}
+<IN_STRING21> TOKEN : { <SINGLE_STRING2: "\""> {
+    matchedToken.image = image.toString(); } : DEFAULT}
+<IN_STRING13> TOKEN : { <TRIPLE_STRING: "'''"> {
+    matchedToken.image = image.toString(); } : DEFAULT}
+<IN_STRING23> TOKEN : { <TRIPLE_STRING2: "\"\"\""> {
+    matchedToken.image = image.toString(); } : DEFAULT}
+
+<IN_USTRING11> TOKEN : { <SINGLE_USTRING: "'"> {
+    matchedToken.image = image.toString(); } : DEFAULT}
+<IN_USTRING21> TOKEN : { <SINGLE_USTRING2: "\""> {
+    matchedToken.image = image.toString(); } : DEFAULT}
+<IN_USTRING13> TOKEN : { <TRIPLE_USTRING: "'''"> {
+    matchedToken.image = image.toString(); } : DEFAULT}
+<IN_USTRING23> TOKEN : { <TRIPLE_USTRING2: "\"\"\""> {
+    matchedToken.image = image.toString(); } : DEFAULT}
+
+<IN_STRING11> MORE: {
+	<"\\\r\n">           { image.setLength(image.length()-3); } : IN_STRING1NLC
+	|  <("\\" ("\n"|"\r"))> { image.setLength(image.length()-2); } : IN_STRING1NLC
+}
+
+<IN_STRING21> MORE: {
+	<"\\\r\n">           { image.setLength(image.length()-3); } : IN_STRING2NLC
+	|  <("\\" ("\n"|"\r"))> { image.setLength(image.length()-2); } : IN_STRING2NLC
+}
+
+<IN_USTRING11> MORE: {
+	<"\\\r\n">           { image.setLength(image.length()-3); } : IN_USTRING1NLC
+	|  <("\\" ("\n"|"\r"))> { image.setLength(image.length()-2); } : IN_USTRING1NLC
+}
+
+<IN_USTRING21> MORE: {
+	<"\\\r\n">           { image.setLength(image.length()-3); } : IN_USTRING2NLC
+	|  <("\\" ("\n"|"\r"))> { image.setLength(image.length()-2); } : IN_USTRING2NLC
+}
+
+<IN_STRING1NLC> MORE: {
+	<""> : IN_STRING11
+}
+
+<IN_STRING2NLC> MORE: {
+	<""> : IN_STRING21
+}
+
+<IN_USTRING1NLC> MORE: {
+	<""> : IN_USTRING11
+}
+
+<IN_USTRING2NLC> MORE: {
+	<""> : IN_USTRING21
+}
+
+<IN_STRING11, IN_USTRING11> MORE: {
+	<("\\" ("\\"|"'")) | ~["\n","\r"]>
+}
+
+<IN_STRING21, IN_USTRING21> MORE: {
+	<("\\" ("\\"|"\"")) | ~["\n","\r"]>
+}
+
+<IN_STRING13, IN_STRING23, IN_USTRING13, IN_USTRING23> MORE: {
+	<"\r\n"> {
+		int l = image.length();
+		image.setLength(l-1);
+		image.setCharAt(l-2, '\n');
+	}
+	|  <"\n">
+	|  <"\r"> { image.setCharAt(image.length()-1, '\n'); }
+	|  <~["\n","\r"]>
+	|  <"\\" ~["\n","\r"]>
+}
+
+GRAMMARSTART
+
+@FSTNonTerminal
+file_input
+	:  (stmt)* <EOF>
+	;
+
+
+stmt					//merge="LineBased" 									
+	:  @FSTNonTerminal(name="{funcdef}", compose="JavaMethodOverriding") LOOK_AHEAD("Name() assignType() function()") funcdef :: FunctionDefinition 
+	|  @FSTNonTerminal(name="{simple_stmt}") simple_stmt
+	|  @FSTTerminal(name="{AUTO}", merge="SemanticConflict") if_stmt
+	|  @FSTTerminal(name="{AUTO}", merge="SemanticConflict") while_stmt
+	|  @FSTTerminal(name="{AUTO}", merge="SemanticConflict") for_stmt	
+	;
+
+@FSTExportName("{<NAME>} ({parameters}) ")
+funcdef
+	: <NAME> assignType <FUNCTION>  parameters function_body
+	;
+assignType:
+ 	"="| "<-"
+ 	;
+ 	
+function:
+	<FUNCTION>
+;
+function_body: 
+	"{" (stmt)* "}"
+	;
+
+
+
+@FSTNonTerminal(name="{small_stmt}")
+simple_stmt
+	:  &LI small_stmt (LL(2) ";" &LI small_stmt)* [";" <NONE>] 
+	;
+/*
+simple_stmt
+	:  &LI small_stmt (LL(2) ";" &LI small_stmt)* [";" <NONE>] <NEWLINE>
+	;
+*/
+
+small_stmt
+	:  @FSTTerminal(name="{TOSTRING}",merge="SemanticConflict") import_stmt 
+	|  @FSTTerminal(name="{assignment_stmt}",merge="SemanticConflict") LOOK_AHEAD("Name() assignType()") assignment_stmt
+	|  @FSTTerminal(name="{expr_stmt}",merge="SemanticConflict") expr_stmt
+//	|  @FSTTerminal(name="{TOSTRING}",merge="SemanticConflict") flow_stmt
+
+	;
+
+@FSTExportName("{<NAME>}")
+assignment_stmt
+	:  <NAME> assignType SmartTestList
+	// <NAME> "=" SmartTestList
+	;
+
+@FSTExportName("{SmartTestList}")
+expr_stmt
+	:  SmartTestList expr_stmtEnd
+	;
+
+expr_stmtEnd
+	:  <PLUSEQ> SmartTestList
+	|  <MINUSEQ> SmartTestList
+	|  <MULTIPLYEQ> SmartTestList
+	|  <DIVIDEEQ> SmartTestList
+	|  <FLOORDIVIDEEQ> SmartTestList
+	|  <MODULOEQ> SmartTestList
+	|  <ANDEQ> SmartTestList
+	|  <OREQ> SmartTestList
+	|  <XOREQ> SmartTestList
+	|  <LSHIFTEQ> SmartTestList
+	|  <RSHIFTEQ> SmartTestList
+	|  <POWEREQ> SmartTestList
+	|  ("=" SmartTestList)*
+	;
+
+
+flow_stmt
+	:  <BREAK>
+	|  <CONTINUE>
+	|  return_stmt
+	;
+
+return_stmt
+	:  <RETURN> [SmartTestList]
+	;
+
+testcommatest
+	:  test ["," test]
+	;
+
+
+import_stmt
+	:  "library"  "(" Name ")"	;
+
+
+
+dotted_as_name
+	:  dotted_name ["as" Name]
+	;
+
+dotted_name
+	:  AnyName ("." AnyName)*
+	;
+
+
+if_stmt:
+"if" "(" expr_stmt ")" "{"  (stmt)* "}" [else_clause];
+
+else_clause:
+	"else" "{" (stmt)* "}";
+
+
+/*if_stmt
+	:  "if" test ":" if_stmt_End
+	;
+*/
+if_stmt_End
+	:  small_stmt (elif_stmt)* [else_stmt]
+	|  suite (elif_stmt)* [else_stmt]
+	;
+
+elif_stmt
+	:  "elif" test ":" elif_stmt_End
+	;
+
+elif_stmt_End
+	:  small_stmt  
+	|  suite
+	;
+
+else_stmt
+	:  "else" ":" else_stmt_End
+	;
+
+else_stmt_End
+	:  small_stmt  
+	|  suite
+	;
+
+while_stmt
+	:  "while" test ":" while_stmt_End
+	;
+
+while_stmt_End
+	:  small_stmt  
+	|  suite [else_stmt]
+	;
+
+for_stmt
+	:  "for" exprlist "in" SmartTestList ":" for_stmt_End
+	;
+
+for_stmt_End
+	:  small_stmt  
+	|  suite [else_stmt]
+	;
+
+test
+	:  lambdef
+	|  and_test ("or" and_test)*
+	;
+
+and_test
+	:  not_test ("and" not_test)*
+	;
+
+not_test
+	:  "not" not_test
+	|  comparison
+	;
+
+comparison
+	:  expr (compEnd)*
+	;
+
+compEnd
+	:  comp_op expr
+	;
+
+comp_op
+	:  <LESS>
+	|  <GREATER>
+	|  <EQEQUAL>
+	|  <EQGREATER>
+	|  <EQLESS>
+	|  <LESSGREATER>
+	|  <NOTEQUAL>
+	|  <IN>
+	|  "not" <IN>
+	|  LL(2) <IS> "not"
+	|  <IS>
+	;
+
+expr
+	:  xor_expr ("|" xor_expr)*
+	;
+
+xor_expr
+	:  and_expr ("^" and_expr )*
+	;
+
+and_expr
+	:  shift_expr ("&" shift_expr)*
+	;
+
+shift_expr
+	:  arith_expr (shift_exprEnd )*
+	;
+
+shift_exprEnd
+	:  "<<" arith_expr
+	|  ">>" arith_expr
+	;
+
+arith_expr
+	:  term (arith_exprEnd)*
+	;
+
+arith_exprEnd
+	:  <PLUS> term
+	| <MINUS> term
+	;
+
+term
+	:  factor (termEnd)*
+	;
+
+termEnd
+	:  "*" factor
+	|  <DIVIDE> factor
+	|  <FLOORDIVIDE> factor
+	|  <MODULO> factor
+	;
+
+factor
+	:  <PLUS> factor
+	|  <MINUS> factor
+	|  <NOT> factor
+	|  powerfactor
+	;
+
+powerfactor
+	:  atomtrailer (LL(2) "**" factor)*
+	;
+
+atomtrailer
+	:  atom (atomtrailerEnd)*
+	;
+
+atomtrailerEnd
+	:  LL(2) "(" ")" <NONE>
+	|  "(" arglist ")"
+	|  "[" subscriptlist "]"
+	|  <DOT> AnyName
+	;
+
+atom
+	:  LL(2) "(" ")" <NONE>
+	|  LL(2) Name "=" test
+	|  "(" [SmartTestList] ")"
+	|  <LBRACKET> [listmaker] "]"
+	|  "{" [dictmaker] "}"
+	|  "`" SmartTestList "`"
+	|  Name
+	|  Number
+	|  StringNode (StringNode)*
+	;
+
+lambdef
+	:  <LAMBDA> [varargslist] ":" test
+	;
+
+subscriptlist
+	:  subscript (LL(2) "," subscript)* [","<NONE>]
+	| "," subscript (LL(2) "," subscript)* [","<NONE>]
+	;
+
+subscript
+	:  <DOT> <DOT> <DOT>
+	|  test (slice)?
+	|  slice
+	;
+
+slice
+	:  ct [ct]
+	;
+
+ct
+	:  ":" [test]
+	;
+
+exprlist
+	:  expr (LL(2) "," expr)* [","<NONE>]
+	;
+
+@FSTExportName("{TOSTRING}")
+SmartTestList
+	:  test (LL(2) "," test)* [","<NONE>]
+	;
+
+testlist
+	:  test (LL(2) "," test)* [","<NONE>]
+	;
+
+dictmaker
+	:  test ":" test (LL(2) dictInt)* [","<NONE>]
+	;
+
+dictInt
+	:  "," test ":" test
+	;
+
+listmaker
+	:  test listmakerEnd
+	;
+
+listmakerEnd
+	:  (list_for)+
+	|  (LL(2) "," test)* [","<NONE>]
+	;
+
+list_for:
+ 	"for" exprlist "in" SmartTestList (list_if)* ;
+
+list_if
+	:  "if" test
+	;
+
+decorators
+	:  (decorator @!)+
+	;
+
+decorator
+	:  "@" dotted_name decorator_End
+	;
+
+decorator_End
+	:  
+  "(" decorator_End_Par
+	;
+
+decorator_End_Par
+	:  LOOK_AHEAD(1) ")"<NONE> <NEWLINE>
+	|  arglist ")"<NONE> <NEWLINE>
+	;
+
+
+@FSTExportName("{<NAME>}")
+Field
+	:  <NAME> "=" SmartTestList
+	;
+
+@FSTInline
+suite
+	:  <NEWLINE>  (stmt)+
+	;
+
+arglist
+	:  normalargs [arglist1End]
+	|  [LL(2) arglist1EndEnd]
+	;
+
+arglist1End
+	:  ","  [LL(2) arglist1EndEnd]
+	;
+
+arglist1EndEnd
+	:  LL(2) ExtraArgValueList ["," ExtraKeywordValueList]
+	|  ExtraKeywordValueList
+	;
+
+normalargs
+	:  argument (LL(2) "," argument)*
+	;
+
+ExtraArgValueList
+	:  "*" test
+	;
+
+ExtraKeywordValueList
+	:  power test
+	;
+
+power
+	:  "**"<NONE>
+	|  "*" "*" <NONE>
+	;
+
+argument
+	:  [LL(2) AnyName "="] test
+	;
+
+Number
+	:  <HEXNUMBER>
+	|  <OCTNUMBER>
+	|  <DECNUMBER>
+	|  <FLOAT>
+	|  <COMPLEX>
+	;
+
+Complex
+	:  <FLOAT>
+	;
+
+Name
+	:  <NAME>
+	;
+
+StringNode
+	:  <SINGLE_STRING>
+	|  <SINGLE_STRING2>
+	|  <TRIPLE_STRING>
+	|  <TRIPLE_STRING2>
+	|  <SINGLE_USTRING>
+	|  <SINGLE_USTRING2>
+	|  <TRIPLE_USTRING>
+	|  <TRIPLE_USTRING2>
+	;
+
+AnyName
+	:  <NAME>
+	|  "or"
+	|  "and"
+	|  "not"
+	|  <IS>
+	|  <IN>
+	|  <LAMBDA>
+	|  <IF>
+	|  <ELSE>
+	|  <ELIF>
+	|  <WHILE>
+	|  <FOR>
+	|  <TRY>
+	|  <EXCEPT>
+	|  <DEF>
+	|  <CLASS>
+	|  <FINALLY>
+	|  <PRINT>
+	|  <PASS>
+	|  <BREAK>
+	|  <CONTINUE>
+	|  <RETURN>
+	|  <YIELD>
+	|  <LIBRARY>
+	|  <FROM>
+	|  <DEL>
+	|  <RAISE>
+	|  <GLOBAL>
+	|  <EXEC>
+	|  <ASSERT>
+	|  <AS>
+	;
+	
+	@FSTExportName("{varargslist}")
+parameters
+	:  "(" [varargslist] ")"
+	;
+
+@FSTExportName("{TOSTRING}")
+varargslist
+	:  defaultarg (LL(2) "," defaultarg)* [LL(3) "," ExtraArgList] [LL(2) "," ExtraKeywordList] ["," <NONE>]
+	|  LL(2) ExtraArgList ["," ExtraKeywordList]
+	|  ExtraKeywordList
+	;
+
+ExtraArgList
+	:  "*" Name
+	;
+
+ExtraKeywordList
+	:  power Name
+	;
+
+defaultarg
+	:  fpdef ["=" test]
+	;
+
+fpdef
+	:  Name
+	|  "(" fplist ")"
+	;
+
+fplist
+	:  fpdef (LL(2) "," fpdef)* [","<NONE>]
+	;
+	
