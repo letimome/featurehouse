@@ -1,11 +1,18 @@
 <?xml version="1.0"?>
 
 <project basedir=".">
-	<taskdef name="astgen" classname="cide.astgen.ant.AstgenTask" />
-	<taskdef name="jcc" classname="cide.astgen.ant.JavaCCTask" />
+	<taskdef name="astgen" classname="cide.astgen.ant.AstgenTask" classpath="./bin"/>
+	<taskdef name="jcc" classname="cide.astgen.ant.JavaCCTask" classpath="./bin" />
 
-	<target name="alllanguages" depends="antlr,bali,c,capprox,cs,ecmascript,fj,gcide,haskell,phaskell,java15,javacc,properties,simple,html,xml"/>
+	<target name="alllanguages" depends="antlr,bali,c,capprox,cs,ecmascript,fj,gcide,haskell,phaskell,java15,javacc,properties,simple,html,xml,r"/>
 
+	<target name="r">
+		<antcall target="createlang">
+			<param name="language" value="r" />
+			<param name="directory" value="${basedir}/../CIDE_Language_R/src" />
+		</antcall>
+	</target>
+	
 	<target name="antlr">
 		<antcall target="createlang">
 			<param name="language" value="antlr" />
@@ -120,7 +127,6 @@
 			<param name="directory" value="${directory}" />
 		</antcall>
 	</target>
-
 
 	<target name="clean">
 		<delete failonerror="false">

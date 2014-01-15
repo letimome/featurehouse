@@ -1254,8 +1254,8 @@ public class SimplePrintVisitor extends AbstractFSTPrintVisitor  {
 		if (type.equals("HenceByKeyword2") && expectedType.equals("HenceByKeyword")) return true;
 		if (type.equals("TypeArgument2") && expectedType.equals("TypeArgument")) return true;
 		if (type.equals("PrimarySuffix3") && expectedType.equals("PrimarySuffix")) return true;
-		if (type.equals("StoreRefList1") && expectedType.equals("StoreRefList")) return true;
 		if (type.equals("StatementExpressionAssignment1") && expectedType.equals("StatementExpressionAssignment")) return true;
+		if (type.equals("StoreRefList1") && expectedType.equals("StoreRefList")) return true;
 		if (type.equals("Statement18") && expectedType.equals("Statement")) return true;
 		if (type.equals("Type1") && expectedType.equals("Type")) return true;
 		if (type.equals("PrimaryPrefix2") && expectedType.equals("PrimaryPrefix")) return true;
