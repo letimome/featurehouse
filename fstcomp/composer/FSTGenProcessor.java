@@ -17,6 +17,7 @@ import printer.haskell.HaskellPrintVisitor;
 import printer.java.JavaPrintVisitor;
 import printer.javacc.JavaCCPrintVisitor;
 import printer.jcop.JCopPrintVisitor;
+import printer.r.RPrintVisitor;
 import printer.sdf.SDFPrintVisitor;
 import printer.str.STRPrintVisitor;
 import printer.text.TextPrintVisitor;
@@ -32,6 +33,7 @@ import builder.haskell.HaskellBuilder;
 import builder.java.JavaBuilder;
 import builder.javacc.JavaCCBuilder;
 import builder.jcop.JCopBuilder;
+import builder.r.RBuilder;
 import builder.sdf.SDFBuilder;
 import builder.str.STRBuilder;
 import builder.text.TextBuilder;
@@ -61,6 +63,7 @@ public class FSTGenProcessor {
 		registerArtifactBuilder(new XMIBuilder());
 		registerArtifactBuilder(new SDFBuilder());
 		registerArtifactBuilder(new STRBuilder());
+		registerArtifactBuilder(new RBuilder());//R builder
 		registerArtifactBuilder(new TextBuilder(".properties"));
 		registerArtifactBuilder(new TextBuilder(".txt"));
 		registerArtifactBuilder(new BinaryBuilder(".jpg"));
@@ -80,6 +83,7 @@ public class FSTGenProcessor {
 		registerPrintVisitor(new XMIPrintVisitor());
 		registerPrintVisitor(new SDFPrintVisitor());
 		registerPrintVisitor(new STRPrintVisitor());
+		registerPrintVisitor(new RPrintVisitor());//R print visitor
 		registerPrintVisitor(new TextPrintVisitor(".properties"));
 		registerPrintVisitor(new TextPrintVisitor(".txt"));
 		registerPrintVisitor(new BinaryPrintVisitor(".jpg"));
